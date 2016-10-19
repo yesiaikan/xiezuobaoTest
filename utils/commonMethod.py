@@ -8,6 +8,8 @@ import urllib2
 
 import sys
 
+import time
+
 logger = logging.getLogger()
 logger.level = logging.DEBUG
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -49,3 +51,31 @@ def clearCleasses():
 
     except Exception, e:
         logger.error(e.message)
+
+
+def loginAndCreateClass(opener):
+    try:
+        username = 'muli'
+        password = '123123'
+        url = address + '/api/v1/account/login'
+        data = {'username': username, 'password': password}
+        postData = json.dumps(data)
+        headers = {'Content-Type': 'application/json'}
+        request = urllib2.Request(url, postData, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+
+
+        # 创建班级
+        url = address + '/api/v1/account/group/edit'
+        name = '我的第一个班级' + str(time.time())
+        body = {'name': name}
+        data = json.dumps(body)
+        request = urllib2.Request(url, data, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+        group_uid = response_json_data['data']['uid']
+        return group_uid
+    except Exception, e:
+        logger.error(e.message)
+

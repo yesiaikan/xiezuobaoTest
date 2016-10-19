@@ -30,10 +30,11 @@ class ClassesTest(unittest.TestCase):
             password = '123123'
             url = address + '/api/v1/account/login'
             data = {'username': username, 'password': password}
+            postData = json.dumps(data)
+            headers = {'Content-Type': 'application/json'}
             cookieJar = cookielib.CookieJar()
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
-            data = urllib.urlencode(data)
-            request = urllib2.Request(url, data)
+            request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             cookies = cookieJar._cookies['pigai.hexinedu.com']['/']
