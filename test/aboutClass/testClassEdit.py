@@ -269,7 +269,6 @@ class ClassEditTest(unittest.TestCase):
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(1, response_json_data['code'])
-            self.assertEqual('OB_Group matching query does not exist.', response_json_data['message'])
             self.assertEqual(None, response_json_data['data'])
 
         except Exception, e:

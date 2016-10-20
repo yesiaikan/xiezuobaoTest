@@ -66,3 +66,53 @@ class StudentCreate(unittest.TestCase):
             logger.error(e.message)
             self.fail()
 
+    # 创建学生姓名为空
+    def testCreateNoneName(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 班级中创建学生
+            i = 0
+            names = [None, '  ', '']
+            for name in names:
+                i += 1
+                url = address + '/api/v1/account/student/edit'
+                data = {'name': name, 'number': str(i), 'group_uid': group_uid}
+                postData = json.dumps(data)
+                request = urllib2.Request(url, postData, headers)
+                content = opener.open(request)
+                response_json_data = json.loads(content.read())
+                self.assertEqual(200, content.code)
+                self.assertEqual(1, response_json_data['code'])
+
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+
+
+    # 创建学生number为空 TODO
+    def testCreateNoneName(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 班级中创建学生
+            i = 0
+            numbers = [None, '', ' ']
+            for number in numbers:
+                i += 1
+                url = address + '/api/v1/account/student/edit'
+                data = {'name': '张柳', 'number': number, 'group_uid': group_uid}
+                postData = json.dumps(data)
+                request = urllib2.Request(url, postData, headers)
+                content = opener.open(request)
+                response_json_data = json.loads(content.read())
+                self.assertEqual(200, content.code)
+                self.assertEqual(1, response_json_data['code'])
+
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()

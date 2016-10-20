@@ -162,3 +162,20 @@ class ClassesGetInfoTest(unittest.TestCase):
         except Exception, e:
             logger.error(e.message)
             self.fail()
+
+    # 未登录状态下查询班级信息
+    def testSearchNotLogin(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            url = address + '/api/v1/account/group/edit?group_uid=' + '21214'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(2, response_json_data['code'])
+            self.assertEqual('Passport Error', response_json_data['message'])
+            self.assertEqual(None, response_json_data['data'])
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()

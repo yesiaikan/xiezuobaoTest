@@ -42,8 +42,7 @@ class ClassCreateTest(unittest.TestCase):
             self.assertEqual(0, response_json_data['code'])
             self.assertTrue('passport' in cookies)
 
-            # TODO  前后空格
-            nameList = [',/.\`..;:', '*&*#@$#%^*!', '  01010110  ', 'normal', '', '0012344']
+            nameList = [',/.\`..;:', '*&*#@$#%^*!', '  01010110  ', 'normal', '0012344']
             for name in nameList:
                 # 清空教师班级列表
                 clearCleasses()
@@ -98,7 +97,7 @@ class ClassCreateTest(unittest.TestCase):
             self.assertTrue('passport' in cookies)
 
             # TODO  '' && 前后空格 && None
-            nameList = [None, '']
+            nameList = ['  ', None, '']
             for name in nameList:
                 # 清空教师班级列表
                 clearCleasses()
@@ -114,7 +113,6 @@ class ClassCreateTest(unittest.TestCase):
                 self.assertEqual(200, content.code)
                 self.assertEqual(1, response_json_data['code'])
                 self.assertEqual(None, response_json_data['data'])
-                self.assertEqual('(1048, "Column \'name\' cannot be null")', response_json_data['message'])
 
                 # 查询班级,查询是否创建成功
                 url_grouplist = address + '/api/v1/account/teacher/group'
@@ -156,7 +154,6 @@ class ClassCreateTest(unittest.TestCase):
             self.assertEqual(200, content.code)
             self.assertEqual(1, response_json_data['code'])
             self.assertEqual(None, response_json_data['data'])
-            self.assertEqual('(1048, "Column \'name\' cannot be null")', response_json_data['message'])
 
             # 查询班级,查询是否创建成功
             # 查询班级列表
