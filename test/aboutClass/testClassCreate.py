@@ -59,7 +59,7 @@ class ClassCreateTest(unittest.TestCase):
                 self.assertEqual(200, content.code)
                 self.assertEqual(0, response_json_data['code'])
                 self.assertEqual(None, response_json_data['message'])
-                self.assertEqual(name, response_json_data['data']['name'].encode('UTF-8'))
+                self.assertEqual(name.strip(), response_json_data['data']['name'].encode('UTF-8'))
                 uid = response_json_data['data']['uid']
                 self.assertIsNotNone(uid)
 
@@ -71,14 +71,14 @@ class ClassCreateTest(unittest.TestCase):
                 response_json_data = json.loads(content.read())
                 datas = response_json_data['data']
                 self.assertEqual(1, len(datas))
-                self.assertEqual(name, datas[0]['name'])
+                self.assertEqual(name.strip(), datas[0]['name'])
                 self.assertEqual(uid, datas[0]['uid'])
         except Exception, e:
             logger.error(e.message)
             self.fail()
 
 
-    #创建班级时候name为'' 或者 None  TODO ''
+    #创建班级时候name测试
     def testCreateError(self):
         try:
             # 登录
