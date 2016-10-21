@@ -19,7 +19,9 @@ headers = {'Content-Type': 'application/json'}
 
 
 # TODO 上述bug修复后,添加此用例:  学号不重复不一定在一个班内，一个老师教的学生都不应该重复，测试的时候得注意
-# TODO 批量创建的学生和之前单个创建的学号重复
+# TODO 批量创建的学生和其他班级的学号重复
+# TODO 批量创建的学生和之前删掉的学号重复
+# TODO 批量创建的学生和之前删掉班的学号重复
 
 class StudentCreateBatch(unittest.TestCase):
 

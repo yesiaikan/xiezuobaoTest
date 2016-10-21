@@ -2,13 +2,16 @@
 import cookielib
 import json
 import logging
-import random
 import unittest
 import sys
-import urllib
 import urllib2
+import uuid
 
-from utils.commonMethod import clearCleasses, loginAndCreateClass
+import requests
+from poster.encode import multipart_encode
+from poster.streaminghttp import register_openers
+
+from utils.commonMethod import clearCleasses, loginAndCreateClass, my_Login, createExam, clearExams
 
 logger = logging.getLogger()
 logger.level = logging.DEBUG
@@ -18,57 +21,18 @@ address = 'http://pigai.hexinedu.com'
 headers = {'Content-Type': 'application/json'}
 
 
-class StudentCreate(unittest.TestCase):
+class PictureUpload(unittest.TestCase):
 
     def setUp(self):
         clearCleasses()
+        clearExams()
 
-    # 班级中创建学生
-    def testCreate(self):
+    # 上传图片
+    def testPicture(self):
         try:
             cookieJar = cookielib.CookieJar()
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
-            group_uid = loginAndCreateClass(opener)
-
-            # 创建考试
-            url = address + '/api/v1/exercise/edit'
-            name = '考试啦'
-            subject = 'chinese'
-            data = {'name': name, 'subject': subject, 'manual': True}
-            postData = json.dumps(data)
-            request = urllib2.Request(url, postData, headers)
-            content = opener.open(request)
-            response_json_data = json.loads(content.read())
-            self.assertEqual(200, content.code)
-            self.assertEqual(0, response_json_data['code'])
-            self.assertEqual(name, response_json_data['data']['name'].encode('UTF-8'))
-            # self.assertEqual(subject, response_json_data['data']['subject'])
-            exam_uid = response_json_data['data']['uid']
-            self.assertIsNotNone(exam_uid)
-
-            # 编辑考试
-            url = address + '/api/v1/exercise/edit'
-            name = '考试啦'
-            data = {'name': name, 'exercise_uid': exam_uid,
-                    'origin': [{'body': '内容看这里', 'doi': 1, 'title': '标题在这里', 'answer': '',
-                                'number_upper': 1000, 'number_lower': 100, 'score': 150}]
-                    }
-            postData = json.dumps(data)
-            request = urllib2.Request(url, postData, headers)
-            content = opener.open(request)
-            response_json_data = json.loads(content.read())
-            self.assertEqual(200, content.code)
-            self.assertEqual(0, response_json_data['code'])
-
-            # 提交考试
-            url = address + '/api/v1/exercise/submit'
-            data = {'exercise_uid': exam_uid}
-            postData = json.dumps(data)
-            request = urllib2.Request(url, postData, headers)
-            content = opener.open(request)
-            response_json_data = json.loads(content.read())
-            self.assertEqual(200, content.code)
-            self.assertEqual(0, response_json_data['code'])
+            exam_uid, group_uid = createExam(opener)
 
             url = address + '/api/v1/pool/image/access?exercise_uid=' + exam_uid
             request = urllib2.Request(url)
@@ -76,7 +40,65 @@ class StudentCreate(unittest.TestCase):
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
 
+            accessid = response_json_data['data']['accessid']
+            url = response_json_data['data']['host']
+            expire = response_json_data['data']['expire']
+            signature = response_json_data['data']['signature']
+            policy = response_json_data['data']['policy']
+            dir = response_json_data['data']['dir']
+
+            # register_openers()
+            # data = {'name': str(filename), 'key': str(dir) + filename, 'policy': str(policy),
+            #         'signature': str(signature), 'OSSAccessKeyId': str(accessid), 'file': open('test.jpg', 'rb')}
+            # datagen, headers = multipart_encode(data)
+            # request = urllib2.Request(url, datagen, headers)
+            # content1 = urllib2.urlopen(request)
+            # response_json_data = json.loads(content1.read())
+            # self.assertEqual(200, content.code)
+
+            filename = uuid.uuid4().hex + '-origin.jpg'
+            data = {'name': str(filename), 'key': str(dir) + filename, 'policy': str(policy),
+                    'signature': str(signature), 'OSSAccessKeyId': str(accessid)}
+            files = {'file': open('test.jpg', 'rb')}
+            resp = requests.post(url, data=data, files=files)
+            self.assertEqual(204, resp.status_code)
+
         except Exception, e:
             logger.error(e.message)
             self.fail()
 
+
+    # 获取签名缺少参数 TODO  不带参数不应响应code,不应返回签名信息
+    def testPictureMissExamUid(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            exam_uid, group_uid = createExam(opener)
+
+            url = address + '/api/v1/pool/image/access'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertFalse(0 == response_json_data['code'])
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+
+
+    #参数错误 TODO 使用错误的exercise_uid 不应该返回签名信息,code不应该为0
+    def testPictureWrongExamUid(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            exam_uid, group_uid = createExam(opener)
+
+            url = address + '/api/v1/pool/image/access?exercise_uid=' + 'wrong'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertFalse(0 == response_json_data['code'])
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()

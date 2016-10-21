@@ -82,6 +82,20 @@ def loginAndCreateClass(opener):
         logger.error(e.message)
 
 
+def my_Login(opener):
+    try:
+        username = 'muli'
+        password = '123123'
+        url = address + '/api/v1/account/login'
+        data = {'username': username, 'password': password}
+        postData = json.dumps(data)
+        headers = {'Content-Type': 'application/json'}
+        request = urllib2.Request(url, postData, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+    except Exception, e:
+        logger.error(e.message)
+
 def clearExams():
     try:
         # 登录
@@ -111,5 +125,50 @@ def clearExams():
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
+    except Exception, e:
+        logger.error(e.message)
+
+
+def createExam(opener):
+    try:
+        group_uid = loginAndCreateClass(opener)
+
+        # 创建考试
+        url = address + '/api/v1/exercise/edit'
+        name = '考试啦'
+        subject = 'chinese'
+        data = {'name': name, 'subject': subject, 'manual': True}
+        postData = json.dumps(data)
+        request = urllib2.Request(url, postData, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+        exam_uid = response_json_data['data']['uid']
+
+        # 编辑考试
+        url = address + '/api/v1/exercise/edit'
+        name = '考试啦'
+        data = {'name': name, 'exercise_uid': exam_uid,
+                'origin': [{'body': '内容看这里', 'doi': 1, 'title': '标题在这里', 'answer': '',
+                            'number_upper': 1000, 'number_lower': 100, 'score': 150}]
+                }
+        postData = json.dumps(data)
+        request = urllib2.Request(url, postData, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+
+        # 提交考试
+        url = address + '/api/v1/exercise/submit'
+        data = {'exercise_uid': exam_uid}
+        postData = json.dumps(data)
+        request = urllib2.Request(url, postData, headers)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+
+        url = address + '/api/v1/pool/image/access?exercise_uid=' + exam_uid
+        request = urllib2.Request(url)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+
+        return exam_uid, group_uid
     except Exception, e:
         logger.error(e.message)
