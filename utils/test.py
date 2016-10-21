@@ -2,5 +2,8 @@ import time
 
 import datetime
 
-print time.time()
-print datetime.datetime.now().microsecond
+start = datetime.datetime.now()
+
+end = datetime.datetime.now()
+
+print (end - start).microseconds  #微秒

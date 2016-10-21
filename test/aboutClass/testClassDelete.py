@@ -18,6 +18,8 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 address = 'http://pigai.hexinedu.com'
 
+# TODO 不是此老师创建的能否删除
+
 class ClassCreateTest(unittest.TestCase):
 
     def setUp(self):

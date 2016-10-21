@@ -22,7 +22,7 @@ class WechartScanTest(unittest.TestCase):
         req = urllib2.Request(url, data=urllib.urlencode(params))
         content = urllib2.urlopen(req)
         response_json_data = json.loads(content.read())
-        print response_json_data
+        self.assertEqual(2, response_json_data['code'])
 
 
 

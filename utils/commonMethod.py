@@ -13,7 +13,9 @@ import time
 logger = logging.getLogger()
 logger.level = logging.DEBUG
 logger.addHandler(logging.StreamHandler(sys.stdout))
+
 address = 'http://pigai.hexinedu.com'
+headers = {'Content-Type': 'application/json'}
 
 def clearCleasses():
     try:
@@ -79,3 +81,35 @@ def loginAndCreateClass(opener):
     except Exception, e:
         logger.error(e.message)
 
+
+def clearExams():
+    try:
+        # 登录
+        username = 'muli'
+        password = '123123'
+        url = address + '/api/v1/account/login'
+        data = {'username': username, 'password': password}
+        cookieJar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+        data = urllib.urlencode(data)
+        request = urllib2.Request(url, data)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+        cookies = cookieJar._cookies['pigai.hexinedu.com']['/']
+
+        # 查看教师考试列表
+        url = address + '/api/v1/exercise/list'
+        request = urllib2.Request(url)
+        content = opener.open(request)
+        response_json_data = json.loads(content.read())
+        datas = response_json_data['data']
+        for data in datas:
+            exam_uid = data['uid']
+            url = address + '/api/v1/exercise/delete'
+            data = {'exercise_uid': exam_uid}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+    except Exception, e:
+        logger.error(e.message)
