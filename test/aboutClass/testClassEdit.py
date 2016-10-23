@@ -254,6 +254,7 @@ class ClassEditTest(unittest.TestCase):
             self.fail()
 
     #编辑的时候  uid有误
+    # TODO code应该为1
     def testEditWrongUid(self):
         try:
             cookieJar = cookielib.CookieJar()

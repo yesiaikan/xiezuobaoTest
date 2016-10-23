@@ -70,7 +70,7 @@ class ClassCreateTest(unittest.TestCase):
                 response_json_data = json.loads(content.read())
                 datas = response_json_data['data']
                 self.assertEqual(1, len(datas))
-                self.assertEqual(name.strip(), datas[0]['name'])
+                self.assertEqual(name.strip(), datas[0]['name'].encode('UTF-8'))
                 self.assertEqual(uid, datas[0]['uid'])
         except Exception, e:
             logger.error(e.message)
