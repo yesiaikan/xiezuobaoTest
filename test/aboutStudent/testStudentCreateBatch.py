@@ -10,6 +10,8 @@ import urllib2
 
 import time
 
+import datetime
+
 from utils.commonMethod import clearCleasses, loginAndCreateClass
 
 logger = logging.getLogger()
@@ -18,8 +20,6 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 address = 'http://pigai.hexinedu.com'
 headers = {'Content-Type': 'application/json'}
-
-# TODO 异常情况
 
 class StudentCreateBatch(unittest.TestCase):
 
@@ -34,7 +34,7 @@ class StudentCreateBatch(unittest.TestCase):
             group_uid = loginAndCreateClass(opener)
 
             # 班级中创建学生, 学号有重复
-            number = str(time.time()).split('.')[0] + '2'
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
             url = address + '/api/v1/account/student/batch'
             data = {'group_uid': group_uid, 'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number}, {'name': '张五', 'number': number+'1'}]}
             postData = json.dumps(data)
@@ -69,9 +69,9 @@ class StudentCreateBatch(unittest.TestCase):
 
             # 班级中创建学生
             url = address + '/api/v1/account/student/batch'
-            number = int(str(time.time()).split('.')[0]) + 10
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
             data = {'group_uid': group_uid,
-                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number+1}]}
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
@@ -120,9 +120,9 @@ class StudentCreateBatch(unittest.TestCase):
 
             # 班级中创建学生
             url = address + '/api/v1/account/student/batch'
-            number = int(str(time.time()).split('.')[0]) + 10
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
             data = {'group_uid': group_uid,
-                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 1}]}
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
@@ -184,9 +184,9 @@ class StudentCreateBatch(unittest.TestCase):
 
             # 班级中创建学生
             url = address + '/api/v1/account/student/batch'
-            number = int(str(time.time()).split('.')[0]) + 10
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
             data = {'group_uid': group_uid,
-                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 1}]}
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + '1'}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
@@ -251,80 +251,80 @@ class StudentCreateBatch(unittest.TestCase):
             logger.error(e.message)
             self.fail()
 
-        # 其他班级被删除,新建班级中添加删除班级的学生学号
-        # TODO 目前也能创建成功
-        def testCreateDeleteThanCreat(self):
-            try:
-                cookieJar = cookielib.CookieJar()
-                opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
-                group_uid = loginAndCreateClass(opener)
+    # 其他班级被删除,新建班级中添加删除班级的学生学号
+    # TODO 目前不能创建成功
+    def testCreateDeleteThanCreat(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
 
-                # 班级中创建学生
-                url = address + '/api/v1/account/student/batch'
-                number = int(str(time.time()).split('.')[0]) + 10
-                data = {'group_uid': group_uid,
-                        'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 1}]}
-                postData = json.dumps(data)
-                request = urllib2.Request(url, postData, headers)
-                content = opener.open(request)
-                response_json_data = json.loads(content.read())
-                self.assertEqual(200, content.code)
-                self.assertEqual(0, response_json_data['code'])
-                self.assertEqual(0, len(response_json_data['data']))
+            # 班级中创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number+'1'}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
 
-                # 查询班级列表
-                url = address + '/api/v1/account/student/list?group_uid=' + group_uid
-                request = urllib2.Request(url)
-                content = opener.open(request)
-                response_json_data = json.loads(content.read())
-                self.assertEqual(200, content.code)
-                self.assertEqual(0, response_json_data['code'])
-                self.assertEqual(2, len(response_json_data['data']))
-                stu_uid = response_json_data['data'][0]['uid']
-                stu_uid1 = response_json_data['data'][1]['uid']
+            # 查询班级列表
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(2, len(response_json_data['data']))
+            stu_uid = response_json_data['data'][0]['uid']
+            stu_uid1 = response_json_data['data'][1]['uid']
 
-                #删除班级
-                clearCleasses()
+            #删除班级
+            clearCleasses()
 
-                # 创建其他班级
-                url = address + '/api/v1/account/group/edit'
-                name = '我的第二个班级' + str(time.time())
-                body = {'name': name}
-                data = json.dumps(body)
-                request = urllib2.Request(url, data, headers)
-                content = opener.open(request)
-                response_json_data = json.loads(content.read())
-                oter_group_uid = response_json_data['data']['uid']
+            # 创建其他班级
+            url = address + '/api/v1/account/group/edit'
+            name = '我的第二个班级' + str(time.time())
+            body = {'name': name}
+            data = json.dumps(body)
+            request = urllib2.Request(url, data, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            oter_group_uid = response_json_data['data']['uid']
 
-                # 其他班级中创建学生  number和其他班级的重复
-                url = address + '/api/v1/account/student/batch'
-                data = {'group_uid': oter_group_uid,
-                        'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 2}]}
-                postData = json.dumps(data)
-                request = urllib2.Request(url, postData, headers)
-                content = opener.open(request)
-                response_json_data = json.loads(content.read())
-                self.assertEqual(200, content.code)
-                self.assertEqual(0, response_json_data['code'])
-                self.assertEqual(0, len(response_json_data['data']))
+            # 其他班级中创建学生  number和其他班级的重复
+            url = address + '/api/v1/account/student/batch'
+            data = {'group_uid': oter_group_uid,
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number+'2'}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
 
 
-                # 查询第一个班级列表
-                url = address + '/api/v1/account/student/list?group_uid=' + oter_group_uid
-                request = urllib2.Request(url)
-                content = opener.open(request)
-                response_json_data = json.loads(content.read())
-                self.assertEqual(200, content.code)
-                self.assertEqual(0, response_json_data['code'])
-                self.assertEqual(2, len(response_json_data['data']))
+            # 查询第一个班级列表
+            url = address + '/api/v1/account/student/list?group_uid=' + oter_group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
 
-            except Exception, e:
-                logger.error(e.message)
-                self.fail()
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
 
 
     # 其他班级被删除,删除之前清空学生, 新建班级中添加删除班级的学生学号
-    # TODO 目前也能创建成功
+    # TODO 目前不能创建成功
     def testCreateDeleteThanCreat1(self):
         try:
             cookieJar = cookielib.CookieJar()
@@ -333,9 +333,9 @@ class StudentCreateBatch(unittest.TestCase):
 
             # 班级中创建学生
             url = address + '/api/v1/account/student/batch'
-            number = int(str(time.time()).split('.')[0]) + 10
+            number = str(time.time()).split('.')[0] + str(datetime.datetime.now().microsecond)
             data = {'group_uid': group_uid,
-                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 1}]}
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + '1'}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
@@ -390,14 +390,14 @@ class StudentCreateBatch(unittest.TestCase):
             # 其他班级中创建学生  number和其他班级的重复
             url = address + '/api/v1/account/student/batch'
             data = {'group_uid': oter_group_uid,
-                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + 2}]}
+                    'students': [{'name': '张三', 'number': number}, {'name': '张四', 'number': number + '2'}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
-            self.assertEqual(0, len(response_json_data['data']))
+            self.assertEqual(1, len(response_json_data['data']))
 
             # 查询第一个班级列表
             url = address + '/api/v1/account/student/list?group_uid=' + oter_group_uid
@@ -406,7 +406,7 @@ class StudentCreateBatch(unittest.TestCase):
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
-            self.assertEqual(2, len(response_json_data['data']))
+            self.assertEqual(1, len(response_json_data['data']))
 
         except Exception, e:
             logger.error(e.message)

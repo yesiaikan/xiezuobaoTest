@@ -31,6 +31,24 @@ class Examination(unittest.TestCase):
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
             loginAndCreateClass(opener)
 
+            subjects = ['politics', 'chinese', 'math', 'english', 'physics', 'chemistry', 'biology', 'history', 'geography', 'others']
+            # 创建考试
+            for subject in subjects:
+                url = address + '/api/v1/exercise/edit'
+                name = '考试 ' + subject + ' 啦'
+                # subject = subjects[1]
+                data = {'name': name, 'subject': subject, 'manual': True}
+                postData = json.dumps(data)
+                request = urllib2.Request(url, postData, headers)
+                content = opener.open(request)
+                response_json_data = json.loads(content.read())
+                self.assertEqual(200, content.code)
+                self.assertEqual(0, response_json_data['code'])
+                self.assertEqual(name, response_json_data['data']['name'].encode('UTF-8'))
+                # self.assertEqual(subject, response_json_data['data']['subject'])
+                exam_uid = response_json_data['data']['uid']
+                self.assertIsNotNone(exam_uid)
+
             # 查看教师考试列表
             url = address + '/api/v1/exercise/list'
             request = urllib2.Request(url)
@@ -38,6 +56,8 @@ class Examination(unittest.TestCase):
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(10, len(response_json_data['data']))
+
             datas = response_json_data['data']
             for data in datas:
                 exam_uid = data['uid']
@@ -49,6 +69,15 @@ class Examination(unittest.TestCase):
                 response_json_data = json.loads(content.read())
                 self.assertEqual(200, content.code)
                 self.assertEqual(0, response_json_data['code'])
+
+            # 查看教师考试列表
+            url = address + '/api/v1/exercise/list'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
         except Exception, e:
             logger.error(e.message)
             self.fail()

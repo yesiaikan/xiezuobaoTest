@@ -48,7 +48,14 @@ class ExaminationCreate(unittest.TestCase):
                 exam_uid = response_json_data['data']['uid']
                 self.assertIsNotNone(exam_uid)
 
-        #     TODO 校验列表
+            # 查看教师考试列表
+            url = address + '/api/v1/exercise/list'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(10, len(response_json_data['data']))
         except Exception, e:
             logger.error(e.message)
             self.fail()
