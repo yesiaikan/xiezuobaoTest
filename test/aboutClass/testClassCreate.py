@@ -42,7 +42,7 @@ class ClassCreateTest(unittest.TestCase):
             self.assertEqual(0, response_json_data['code'])
             self.assertTrue('passport' in cookies)
 
-            nameList = [',/.\`..;:', '*&*#@$#%^*!', '  01010110  ', 'normal', '0012344']
+            nameList = [',/.\`..;:', '*&*#@$#%^*!', '中文名字', '  01010110  ', 'normal', '0012344']
             for name in nameList:
                 # 清空教师班级列表
                 clearCleasses()

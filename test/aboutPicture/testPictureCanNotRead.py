@@ -87,7 +87,7 @@ class CantNotRead(unittest.TestCase):
             logger.error(e.message)
             self.fail()
 
-    #没有此序号信息,图片不能识别
+    #没有此学号信息,图片不能识别
     def testReadWithWrongNumber(self):
         try:
             cookieJar = cookielib.CookieJar()
@@ -124,7 +124,7 @@ class CantNotRead(unittest.TestCase):
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
 
-            time.sleep(5)
+            time.sleep(15)
             #获取未识别的图片
             url = address + '/api/v1/pool/image/student?exercise_uid=' + exam_uid
             request = urllib2.Request(url)

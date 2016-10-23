@@ -76,7 +76,7 @@ class Read(unittest.TestCase):
             exam_uid, group_uid = createExam(opener)
 
             url = address + '/api/v1/pool/image/access'
-            data = {'uid': 'muli', 'exercise_uid': exam_uid}
+            data = {'uid': 'muli', 'exercise_uid': exam_uid}   #TODO 测试用例需修改
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)

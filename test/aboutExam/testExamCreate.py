@@ -47,6 +47,8 @@ class ExaminationCreate(unittest.TestCase):
                 # self.assertEqual(subject, response_json_data['data']['subject'])
                 exam_uid = response_json_data['data']['uid']
                 self.assertIsNotNone(exam_uid)
+
+        #     TODO 校验列表
         except Exception, e:
             logger.error(e.message)
             self.fail()
