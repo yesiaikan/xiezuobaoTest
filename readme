@@ -1,0 +1,14 @@
+第三方包:
+requests
+
+运行:
+在IDE中运行:测试类右键运行,则会运行此类中的所有测试用例;测试方法右键运行,则会运行此测试方法
+
+命令行运行:
+nosetests -sv --with-xunit
+需要安装nose
+会生成测试报告nosetests.xml,可以通过jenkins解析并存档
+
+TODO:
+测试类前标记TODO,表示可以添加备注的测试用例
+测试用例中标记TODO,表示存在与此测试用例相关的bug
