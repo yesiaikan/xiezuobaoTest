@@ -28,6 +28,7 @@ class GetReports(unittest.TestCase):
         clearExams()
 
     #正常情况, 学生直接上传
+    # TODO 用例失败,因为 140257（图片中的学号） 的学号已经创建过
     def testCanRead(self):
         try:
             cookieJar = cookielib.CookieJar()
