@@ -8,6 +8,8 @@ import sys
 import urllib
 import urllib2
 
+import time
+
 from utils.commonMethod import clearCleasses, loginAndCreateClass
 
 logger = logging.getLogger()
@@ -16,9 +18,6 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 address = 'http://pigai.hexinedu.com'
 headers = {'Content-Type': 'application/json'}
-
-# TODO user_uid参数测试,包括缺失参数
-# TODO group_uid参数测试,包括缺失参数
 
 class StudentDelete(unittest.TestCase):
 
@@ -32,19 +31,30 @@ class StudentDelete(unittest.TestCase):
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
             group_uid = loginAndCreateClass(opener)
 
-            # 班级中创建学生
-            url = address + '/api/v1/account/student/edit'
-            data = {'name': '张三', 'number': '001', 'group_uid': group_uid}
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0]+'11'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
             postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
-            self.assertEqual('张三', response_json_data['data']['name'].encode('UTF-8'))
-            self.assertEqual('student', response_json_data['data']['role'])
-            stu_uid = response_json_data['data']['uid']
-            self.assertIsNotNone(stu_uid)
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
 
             # 删除学生信息
             url = address + '/api/v1/account/group/student/quit'
@@ -77,20 +87,29 @@ class StudentDelete(unittest.TestCase):
 
             stu_uids = []
             for i in range(10):
-                # 班级中创建学生
-                url = address + '/api/v1/account/student/edit'
-                data = {'name': '张三', 'number': str(i), 'group_uid': group_uid}
+                # 创建学生
+                url = address + '/api/v1/account/student/batch'
+                number = int(str(time.time()).split('.')[0])
+                data = {'group_uid': group_uid,
+                        'students': [{'name': '张三', 'number': number+i}]}
                 postData = json.dumps(data)
                 request = urllib2.Request(url, postData, headers)
                 content = opener.open(request)
                 response_json_data = json.loads(content.read())
                 self.assertEqual(200, content.code)
                 self.assertEqual(0, response_json_data['code'])
-                self.assertEqual('张三', response_json_data['data']['name'].encode('UTF-8'))
-                self.assertEqual('student', response_json_data['data']['role'])
-                stu_uid = response_json_data['data']['uid']
-                self.assertIsNotNone(stu_uid)
-                stu_uids.append(stu_uid)
+                self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(10, len(response_json_data['data']))
+            for data in response_json_data['data']:
+                stu_uids.append(data['uid'])
 
             random.shuffle(stu_uids)
             for stu_uid in stu_uids:            # 删除学生信息
@@ -124,21 +143,31 @@ class StudentDelete(unittest.TestCase):
 
             stu_uids = []
             for i in range(10):
-                # 班级中创建学生
-                url = address + '/api/v1/account/student/edit'
-                data = {'name': '张三', 'number': str(i), 'group_uid': group_uid}
+                # 创建学生
+                url = address + '/api/v1/account/student/batch'
+                number = int(str(time.time()).split('.')[0])
+                data = {'group_uid': group_uid,
+                        'students': [{'name': '张三', 'number': number + i}]}
                 postData = json.dumps(data)
                 request = urllib2.Request(url, postData, headers)
                 content = opener.open(request)
                 response_json_data = json.loads(content.read())
                 self.assertEqual(200, content.code)
                 self.assertEqual(0, response_json_data['code'])
-                self.assertEqual('张三', response_json_data['data']['name'].encode('UTF-8'))
-                self.assertEqual('student', response_json_data['data']['role'])
-                stu_uid = response_json_data['data']['uid']
-                self.assertIsNotNone(stu_uid)
-                stu_uids.append(stu_uid)
+                self.assertEqual(0, len(response_json_data['data']))
 
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(10, len(response_json_data['data']))
+            for data in response_json_data['data']:
+                stu_uids.append(data['uid'])
+
+            #删除
             random.shuffle(stu_uids)
             url = address + '/api/v1/account/group/student/quit'
             data = {'group_uid': group_uid, 'user_uid': stu_uids}
@@ -167,21 +196,32 @@ class StudentDelete(unittest.TestCase):
             cookieJar = cookielib.CookieJar()
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
             group_uid = loginAndCreateClass(opener)
-
-            # 班级中创建学生
-            url = address + '/api/v1/account/student/edit'
-            data = {'name': '张三', 'number': '001', 'group_uid': group_uid}
-            postData = json.dumps(data)
             headers = {'Content-Type': 'application/json'}
+
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '12'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
+            postData = json.dumps(data)
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
-            self.assertEqual('张三', response_json_data['data']['name'].encode('UTF-8'))
-            self.assertEqual('student', response_json_data['data']['role'])
-            stu_uid = response_json_data['data']['uid']
-            self.assertIsNotNone(stu_uid)
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
 
             # 创建其他班级
             url = address + '/api/v1/account/group/edit'
@@ -229,20 +269,30 @@ class StudentDelete(unittest.TestCase):
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
             group_uid = loginAndCreateClass(opener)
 
-            # 班级中创建学生
-            url = address + '/api/v1/account/student/edit'
-            data = {'name': '张三', 'number': '001', 'group_uid': group_uid}
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '13'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
             postData = json.dumps(data)
-            headers = {'Content-Type': 'application/json'}
             request = urllib2.Request(url, postData, headers)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
-            self.assertEqual('张三', response_json_data['data']['name'].encode('UTF-8'))
-            self.assertEqual('student', response_json_data['data']['role'])
-            stu_uid = response_json_data['data']['uid']
-            self.assertIsNotNone(stu_uid)
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
 
 
             # 删除学生信息, 删除学生失败
@@ -266,3 +316,218 @@ class StudentDelete(unittest.TestCase):
         except Exception, e:
             logger.error(e.message)
             self.fail()
+
+    # 删除学生信息, user_id列表为空
+    def testEmptyUserId(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '14'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
+
+            # 删除学生信息
+            url = address + '/api/v1/account/group/student/quit'
+            data = {'group_uid': group_uid, 'user_uid': []}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+
+            # 查询班级中学生列表
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+
+    #缺失user_uid
+    def testMissUserUid(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '11'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
+
+            # 删除学生信息
+            url = address + '/api/v1/account/group/student/quit'
+            data = {'group_uid': group_uid}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(1, response_json_data['code'])
+
+            # 查询班级中学生列表
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+
+    def testMissGroupUid(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '11'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
+
+            # 删除学生信息
+            url = address + '/api/v1/account/group/student/quit'
+            data = {'user_uid': [stu_uid]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(1, response_json_data['code'])
+
+            # 查询班级中学生列表
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+
+    def testWrongGroupUid(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 创建学生
+            url = address + '/api/v1/account/student/batch'
+            number = str(time.time()).split('.')[0] + '11'
+            data = {'group_uid': group_uid,
+                    'students': [{'name': '张三', 'number': number}]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(0, len(response_json_data['data']))
+
+            # 学生列表获取学生uid
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+            self.assertEqual('张三', response_json_data['data'][0]['name'].encode('UTF-8'))
+            self.assertEqual(number, response_json_data['data'][0]['number'])
+            stu_uid = response_json_data['data'][0]['uid']
+
+            # 删除学生信息
+            url = address + '/api/v1/account/group/student/quit'
+            data = {'group_uid': 'wrong', 'user_uid': [stu_uid]}
+            postData = json.dumps(data)
+            request = urllib2.Request(url, postData, headers)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(1, response_json_data['code'])
+
+            # 查询班级中学生列表
+            url = address + '/api/v1/account/student/list?group_uid=' + group_uid
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertEqual(1, len(response_json_data['data']))
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
+

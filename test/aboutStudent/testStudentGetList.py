@@ -54,3 +54,23 @@ class StudentGetList(unittest.TestCase):
             logger.error(e.message)
             self.fail()
 
+
+    # 缺失参数
+    # TODO 缺少班级参数,教师所有学生信息
+    def testMissParam(self):
+        try:
+            cookieJar = cookielib.CookieJar()
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar))
+            group_uid = loginAndCreateClass(opener)
+
+            # 查询班级中学生列表
+            url = address + '/api/v1/account/student/list'
+            request = urllib2.Request(url)
+            content = opener.open(request)
+            response_json_data = json.loads(content.read())
+            self.assertEqual(200, content.code)
+            self.assertEqual(0, response_json_data['code'])
+            self.assertTrue(len(response_json_data['data']) >= 0)
+        except Exception, e:
+            logger.error(e.message)
+            self.fail()
