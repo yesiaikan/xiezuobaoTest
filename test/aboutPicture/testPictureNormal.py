@@ -135,15 +135,21 @@ class SignToStudent(unittest.TestCase):
             self.assertEqual(6, response_json_data['data'][0]['status'])
             self.assertEqual(stu_uid, response_json_data['data'][0]['uid'])
 
-            #获取学生的考试报告
+            #获取学生的考试报告 TODO  缺少参数,返回code不应为0
             url = address + '/api/v1/stat/exercise/one/paper?exercise_uid=' + \
-                  exam_uid + 'student_uid=' + stu_uid
+                  exam_uid + '&student_uid=' + stu_uid
             request = urllib2.Request(url)
             content = opener.open(request)
             response_json_data = json.loads(content.read())
             self.assertEqual(200, content.code)
             self.assertEqual(0, response_json_data['code'])
             self.assertIsNotNone(response_json_data['data'])
+            self.assertIsNotNone(response_json_data['data']['url'])
+            self.assertIsNotNone(response_json_data['data']['score'])
+            self.assertIsNotNone(response_json_data['data']['id'])
+            self.assertIsNotNone(response_json_data['data']['answer'])
+            self.assertFalse('' == response_json_data['data']['answer'])
+
         except Exception, e:
             logger.error(e.message)
             self.fail()
